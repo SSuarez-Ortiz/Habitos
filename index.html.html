@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Hábitos">
+<title>Mis Hábitos</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  :root {
+    --bg: #f7f6f2;
+    --surface: #ffffff;
+    --surface2: #f0ede8;
+    --text: #1a1a18;
+    --text2: #6b6b67;
+    --text3: #a8a8a3;
+    --border: rgba(0,0,0,0.08);
+    --border2: rgba(0,0,0,0.15);
+    --radius: 16px;
+    --radius-sm: 10px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #141412;
+      --surface: #1e1e1c;
+      --surface2: #2a2a27;
+      --text: #f0ede8;
+      --text2: #a8a8a3;
+      --text3: #5a5a57;
+      --border: rgba(255,255,255,0.08);
+      --border2: rgba(255,255,255,0.15);
+    }
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, 'SF Pro Text', sans-serif;
+    min-height: 100vh;
+    padding-bottom: 40px;
+  }
+
+  .safe-top { height: env(safe-area-inset-top, 20px); }
+
+  header {
+    padding: 16px 20px 12px;
+    position: sticky;
+    top: 0;
+    background: var(--bg);
+    z-index: 10;
+  }
+
+  .header-row { display: flex; align-items: flex-start; justify-content: space-between; }
+
+  h1 {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    color: var(--text);
+    font-family: -apple-system, 'SF Pro Display', sans-serif;
+  }
+
+  .date-str { font-size: 13px; color: var(--text2); margin-top: 2px; }
+  .greeting { font-size: 13px; color: var(--text2); margin-top: 6px; }
+
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    padding: 0 20px 16px;
+  }
+
+  .stat {
+    background: var(--surface);
+    border-radius: var(--radius-sm);
+    padding: 12px 10px;
+    text-align: center;
+    border: 0.5px solid var(--border);
+  }
+
+  .stat-val { font-size: 22px; font-weight: 700; color: var(--text); font-family: -apple-system, 'SF Pro Display', sans-serif; }
+  .stat-lbl { font-size: 11px; color: var(--text2); margin-top: 2px; }
+
+  .section-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--text2);
+    padding: 0 20px;
+    margin: 16px 0 8px;
+  }
+
+  .habits-group { display: flex; flex-direction: column; gap: 8px; padding: 0 20px; }
+
+  .card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 14px 14px 12px;
+    border: 0.5px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: background 0.15s;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  .card:active { background: var(--surface2); }
+
+  .dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+  .card-body { flex: 1; min-width: 0; }
+
+  .card-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 6px;
+  }
+
+  .streak-inline { font-size: 12px; color: #BA7517; margin-left: 5px; }
+
+  .week-dots { display: flex; gap: 4px; }
+
+  .wd {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+    color: var(--text3);
+    font-weight: 600;
+    transition: transform 0.1s;
+    flex-shrink: 0;
+    cursor: pointer;
+  }
+
+  .wd.done { border: none; color: transparent; }
+  .wd.today-r { box-shadow: 0 0 0 2px var(--border2); }
+  .wd.na { opacity: 0.2; pointer-events: none; }
+
+  .check-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border2);
+    background: transparent;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: transform 0.12s;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  .check-btn:active { transform: scale(0.9); }
+  .check-btn.done { border: none; }
+
+  .check-icon {
+    width: 22px;
+    height: 22px;
+  }
+
+  .tag {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 99px;
+    flex-shrink: 0;
+  }
+
+  .tag-daily  { background: #eaf3de; color: #3b6d11; }
+  .tag-gym    { background: #faeeda; color: #854f0b; }
+  .tag-weekend{ background: #eeedfe; color: #3c3489; }
+
+  @media (prefers-color-scheme: dark) {
+    .tag-daily   { background: #1e3a0a; color: #a3d16b; }
+    .tag-gym     { background: #3a2000; color: #f5c97a; }
+    .tag-weekend { background: #1e1a40; color: #b0acf0; }
+  }
+
+  .gym-note {
+    font-size: 11px;
+    color: var(--text3);
+    padding: 4px 20px 0;
+  }
+</style>
+</head>
+<body>
+<div class="safe-top"></div>
+<header>
+  <div class="header-row">
+    <div>
+      <h1>Mis Hábitos</h1>
+      <div class="date-str" id="date-str"></div>
+    </div>
+    <div class="greeting" id="greeting"></div>
+  </div>
+</header>
+
+<div class="stats-row">
+  <div class="stat"><div class="stat-val" id="s-today">0</div><div class="stat-lbl">Hoy ✓</div></div>
+  <div class="stat"><div class="stat-val" id="s-streak">0</div><div class="stat-lbl">Racha 🔥</div></div>
+  <div class="stat"><div class="stat-val" id="s-rate">0%</div><div class="stat-lbl">Esta semana</div></div>
+</div>
+
+<div id="main"></div>
+
+<script>
+const DAYS = ['D','L','M','X','J','V','S'];
+
+const HABITS = [
+  { id:1, name:'Curso Coursera 1h',       icon:'📚', cat:'daily',   color:'#639922', activeDays:[0,1,2,3,4,5,6] },
+  { id:2, name:'Gym',                      icon:'🏋️', cat:'gym',     color:'#BA7517', activeDays:[1,2,3,4,5] },
+  { id:3, name:'Leer antes de dormir',     icon:'🌙', cat:'daily',   color:'#7F77DD', activeDays:[0,1,2,3,4,5,6] },
+  { id:4, name:'7–8 horas de sueño',       icon:'😴', cat:'daily',   color:'#378ADD', activeDays:[0,1,2,3,4,5,6] },
+  { id:5, name:'Registrar gastos del día', icon:'💸', cat:'daily',   color:'#1D9E75', activeDays:[0,1,2,3,4,5,6] },
+  { id:6, name:'Limpiar cuarto',           icon:'🧹', cat:'weekend', color:'#D85A30', activeDays:[0,6] },
+  { id:7, name:'Revisar finanzas',         icon:'📊', cat:'weekend', color:'#D4537E', activeDays:[0,6] },
+];
+
+const CAT_LABELS = { daily:'Diario', gym:'Gym — 5 días a la semana', weekend:'Fin de semana' };
+const TAG_CLASS  = { daily:'tag-daily', gym:'tag-gym', weekend:'tag-weekend' };
+const TAG_TEXT   = { daily:'Diario', gym:'Gym', weekend:'Finde' };
+
+function dateKey(d) { return d.toISOString().slice(0,10); }
+function todayKey() { return dateKey(new Date()); }
+function todayDow() { return new Date().getDay(); }
+
+function getWeekDates() {
+  const today = new Date(), dow = today.getDay(), arr = [];
+  for (let i=0;i<7;i++) { const d=new Date(today); d.setDate(today.getDate()-dow+i); arr.push(dateKey(d)); }
+  return arr;
+}
+
+function loadLogs() {
+  try { return JSON.parse(localStorage.getItem('habitos_logs') || '{}'); } catch(e) { return {}; }
+}
+function saveLogs(logs) { try { localStorage.setItem('habitos_logs', JSON.stringify(logs)); } catch(e){} }
+
+let logs = loadLogs();
+
+function getStreak(habit) {
+  let streak=0, d=new Date();
+  for (let i=0;i<365;i++) {
+    const k=dateKey(d), dow=d.getDay();
+    if (habit.activeDays.includes(dow)) {
+      if (logs[habit.id+':'+k]) streak++;
+      else break;
+    }
+    d.setDate(d.getDate()-1);
+  }
+  return streak;
+}
+
+function getMaxStreak(habit) {
+  const prefix = habit.id+':';
+  const keys = Object.keys(logs).filter(k=>k.startsWith(prefix)&&logs[k]).map(k=>k.slice(prefix.length)).sort();
+  if(!keys.length) return 0;
+  let max=1,cur=1;
+  for(let i=1;i<keys.length;i++){
+    const diff=(new Date(keys[i])-new Date(keys[i-1]))/86400000;
+    if(diff===1){cur++;if(cur>max)max=cur;}else cur=1;
+  }
+  return max;
+}
+
+function toggle(habitId, day) {
+  const k = habitId+':'+day;
+  logs[k] = !logs[k];
+  saveLogs(logs);
+  render();
+}
+
+function render() {
+  const todayK = todayKey();
+  const weekDates = getWeekDates();
+  const dow = todayDow();
+  const today = new Date();
+
+  document.getElementById('date-str').textContent =
+    today.toLocaleDateString('es-CO',{weekday:'long',day:'numeric',month:'long'});
+  const h = today.getHours();
+  document.getElementById('greeting').textContent = h<12?'🌅':h<19?'☀️':'🌙';
+
+  // Stats
+  const activeToday = HABITS.filter(h=>h.activeDays.includes(dow));
+  const doneToday = activeToday.filter(h=>logs[h.id+':'+todayK]).length;
+  document.getElementById('s-today').textContent = doneToday+'/'+activeToday.length;
+
+  const allMax = HABITS.map(getMaxStreak);
+  document.getElementById('s-streak').textContent = allMax.length ? Math.max(...allMax) : 0;
+
+  let tp=0,td=0;
+  HABITS.forEach(h=>{
+    weekDates.forEach(d=>{
+      const wd=new Date(d).getDay();
+      if(h.activeDays.includes(wd)){tp++;if(logs[h.id+':'+d])td++;}
+    });
+  });
+  document.getElementById('s-rate').textContent = tp ? Math.round(td/tp*100)+'%' : '0%';
+
+  const groups = ['daily','gym','weekend'];
+  let html = '';
+
+  groups.forEach(cat => {
+    const habits = HABITS.filter(h=>h.cat===cat);
+    if(!habits.length) return;
+    html += `<div class="section-label">${CAT_LABELS[cat]}</div>`;
+    if(cat==='gym') html += `<p class="gym-note">Marca los 5 días que entrenes esta semana</p>`;
+    html += `<div class="habits-group">`;
+
+    habits.forEach(h => {
+      const doneT = !!logs[h.id+':'+todayK];
+      const activeT = h.activeDays.includes(dow);
+      const streak = getStreak(h);
+
+      const wdHtml = weekDates.map((d,i)=>{
+        const wd = new Date(d).getDay();
+        const active = h.activeDays.includes(wd);
+        const done = !!logs[h.id+':'+d];
+        const isToday = d===todayK;
+        if(!active) return `<div class="wd na">${DAYS[i]}</div>`;
+        return `<div class="wd${done?' done':''}${isToday?' today-r':''}"
+          style="${done?'background:'+h.color+';':''}"
+          onclick="toggle(${h.id},'${d}')">${done?'':DAYS[i]}</div>`;
+      }).join('');
+
+      const streakBadge = streak>=2 ? `<span class="streak-inline">🔥${streak}</span>` : '';
+
+      const checkIcon = doneT
+        ? `<svg class="check-icon" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="11" fill="${h.color}"/><path d="M7 12.5l3.5 3.5 6.5-7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`
+        : `<svg class="check-icon" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="11" stroke="var(--border2)" stroke-width="1.5"/></svg>`;
+
+      html += `<div class="card">
+        <div class="dot" style="background:${h.color}"></div>
+        <div class="card-body">
+          <div class="card-name">${h.icon} ${h.name}${streakBadge}</div>
+          <div class="week-dots">${wdHtml}</div>
+        </div>
+        <span class="tag ${TAG_CLASS[h.cat]}">${TAG_TEXT[h.cat]}</span>
+        <button class="check-btn${doneT?' done':''}"
+          onclick="toggle(${h.id},'${todayK}')"
+          style="${!activeT?'opacity:0.3;pointer-events:none;':''}"
+          aria-label="${doneT?'Desmarcar':'Marcar'} ${h.name}">
+          ${checkIcon}
+        </button>
+      </div>`;
+    });
+
+    html += `</div>`;
+  });
+
+  document.getElementById('main').innerHTML = html;
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', render);
+} else {
+  render();
+}
+</script>
+</body>
+</html>
