@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Mis Hábitos</title>
+<style>
+:root[data-theme="dark"] {
+  --bg:       #0D0D0D;
+  --bg2:      #111111;
+  --card:     #1C1C1E;
+  --card2:    #2C2C2E;
+  --pill:     #2C2C2E;
+  --pill-act: #3A3A3C;
+  --text:     #FFFFFF;
+  --text2:    #8E8E93;
+  --text3:    #636366;
+  --border:   #3A3A3C;
+  --done-card:#0D2818;
+  --stat-bg:  #1C1C1E;
+}
+:root[data-theme="light"] {
+  --bg:       #F2F2F7;
+  --bg2:      #FFFFFF;
+  --card:     #FFFFFF;
+  --card2:    #E5E5EA;
+  --pill:     #E5E5EA;
+  --pill-act: #C7C7CC;
+  --text:     #000000;
+  --text2:    #6E6E73;
+  --text3:    #AEAEB2;
+  --border:   #C6C6C8;
+  --done-card:#F0FDF4;
+  --stat-bg:  #FFFFFF;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html { font-size:16px; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+  min-height: 100vh;
+  max-width: 430px;
+  margin: 0 auto;
+  padding-bottom: 60px;
+  transition: background .3s, color .3s;
+}
+
+/* ── HEADER ── */
+.hdr { padding: 56px 20px 12px; }
+.hdr-row { display:flex; justify-content:space-between; align-items:flex-start; }
+.hdr-title { font-size: 34px; font-weight: 700; letter-spacing: -.5px; line-height: 1.1; }
+.hdr-date  { font-size: 16px; color: var(--text2); margin-top: 4px; }
+.btn-theme {
+  background: none; border: none; font-size: 26px; cursor: pointer;
+  padding: 4px; margin-top: 4px; user-select: none;
+}
+
+/* ── STATS ── */
+.stats { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; padding:16px 20px; }
+.stat {
+  background: var(--stat-bg);
+  border-radius: 16px;
+  padding: 16px 10px 14px;
+  text-align: center;
+}
+.stat-num   { font-size: 28px; font-weight: 700; line-height: 1; }
+.stat-label { font-size: 12px; color: var(--text2); margin-top: 5px; }
+
+/* ── SECTION ── */
+.section { padding: 6px 20px 0; }
+.sec-title {
+  font-size: 13px; font-weight: 600; color: var(--text2);
+  text-transform: uppercase; letter-spacing: .4px;
+  padding: 10px 0 6px;
+}
+.sec-sub { font-size: 12px; color: var(--text3); margin: -2px 0 8px; }
+
+/* ── HABIT CARD ── */
+.habit {
+  background: var(--card);
+  border-radius: 16px;
+  padding: 13px 14px 13px 12px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  cursor: pointer;
+  transition: opacity .15s, background .2s;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.habit:active    { opacity: .7; }
+.habit.completed { background: var(--done-card); }
+
+/* colored dot */
+.hdot {
+  width: 10px; height: 10px; border-radius: 50%;
+  flex-shrink: 0; margin-top: 1px;
+}
+
+/* middle */
+.hmid  { flex: 1; min-width: 0; }
+.hname-row { display:flex; align-items:center; gap:8px; margin-bottom: 9px; }
+.hemoji    { font-size: 21px; line-height: 1; }
+.hname     { font-size: 15px; font-weight: 500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+/* day pills */
+.pills { display:flex; gap:5px; }
+.dp {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--pill);
+  display: flex; align-items:center; justify-content:center;
+  font-size: 11px; font-weight: 500; color: var(--text3);
+  transition: background .15s, color .15s;
+  flex-shrink: 0;
+}
+.dp.active   { background: var(--pill-act); color: var(--text2); }
+.dp.istoday  { background: #FF9F0A22; color: #FF9F0A; font-weight:700; }
+.dp.wasdone  { background: #30D15830; color: #30D158; font-weight:700; }
+
+/* right side */
+.hright  { display:flex; align-items:center; gap:8px; flex-shrink:0; }
+.badge   { padding: 4px 11px; border-radius: 20px; font-size: 12px; font-weight: 600; white-space:nowrap; }
+.circle  {
+  width: 32px; height: 32px; border-radius: 50%;
+  border: 2px solid var(--border);
+  display: flex; align-items:center; justify-content:center;
+  font-size: 17px; color: transparent;
+  transition: all .2s;
+  flex-shrink: 0;
+}
+.circle.off    { color: transparent; }
+.circle.on     { background: #30D158; border-color: #30D158; color: #fff; font-size: 15px; }
+.circle.notdue { border-color: var(--border); opacity: .35; cursor: default; }
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 0; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="hdr-row">
+    <div>
+      <div class="hdr-title">Mis Hábitos</div>
+      <div class="hdr-date" id="hdrDate"></div>
+    </div>
+    <button class="btn-theme" id="themeBtn" onclick="toggleTheme()">🌙</button>
+  </div>
+</div>
+
+<!-- STATS -->
+<div class="stats">
+  <div class="stat">
+    <div class="stat-num" id="sToday">0/0</div>
+    <div class="stat-label">Hoy ✓</div>
+  </div>
+  <div class="stat">
+    <div class="stat-num" id="sStreak">0</div>
+    <div class="stat-label">Racha 🔥</div>
+  </div>
+  <div class="stat">
+    <div class="stat-num" id="sWeek">0%</div>
+    <div class="stat-label">Esta semana</div>
+  </div>
+</div>
+
+<!-- HABITS CONTAINER -->
+<div id="habitsRoot"></div>
+
+<script>
+// ── CONFIG ──────────────────────────────────────────────────────────────
+// Days: 0=Dom 1=Lun 2=Mar 3=Mié 4=Jue 5=Vie 6=Sáb
+const DAYS_LABEL = ['D','L','M','X','J','V','S'];
+
+const SECTIONS = [
+  { id:'diario',      title:'DIARIO',                    sub:null },
+  { id:'profesional', title:'PROFESIONAL — L A V',       sub:'Construyendo el camino ✨' },
+  { id:'gym',         title:'GYM — 6 DÍAS A LA SEMANA',  sub:'Marca los 6 días que entrenes esta semana' },
+  { id:'iglesia',     title:'IGLESIA — 2× A LA SEMANA',  sub:null },
+  { id:'bienestar',   title:'BIENESTAR SEMANAL',          sub:null },
+];
+
+const HABITS = [
+  // ── DIARIO ──
+  { id:'h01', emoji:'😴', name:'7-8 horas de sueño',
+    days:[0,1,2,3,4,5,6], dot:'#BF5AF2',
+    badge:'Diario', bb:'#2A1A3A', bc:'#BF5AF2', section:'diario' },
+
+  { id:'h02', emoji:'💧', name:'Hidratación (8 vasos)',
+    days:[0,1,2,3,4,5,6], dot:'#0A84FF',
+    badge:'Diario', bb:'#0A1A2A', bc:'#0A84FF', section:'diario' },
+
+  { id:'h03', emoji:'🌬️', name:'Meditación 5 min',
+    days:[0,1,2,3,4,5,6], dot:'#5AC8FA',
+    badge:'Diario', bb:'#0A2030', bc:'#5AC8FA', section:'diario' },
+
+  { id:'h04', emoji:'📵', name:'Sin celular antes de dormir',
+    days:[0,1,2,3,4,5,6], dot:'#8E8E93',
+    badge:'Diario', bb:'#222224', bc:'#8E8E93', section:'diario' },
+
+  { id:'h05', emoji:'💰', name:'Registrar gastos del día',
+    days:[0,1,2,3,4,5,6], dot:'#30D158',
+    badge:'Diario', bb:'#0D2818', bc:'#30D158', section:'diario' },
+
+  // ── PROFESIONAL ──
+  { id:'h06', emoji:'📚', name:'Estudiar / Curso 1h',
+    days:[1,2,3,4,5], dot:'#F0A500',
+    badge:'L – V', bb:'#2A1E00', bc:'#F0A500', section:'profesional' },
+
+  { id:'h07', emoji:'📋', name:'Aplicar a empleos / CV',
+    days:[1,2,3,4,5], dot:'#A8D848',
+    badge:'L – V', bb:'#1A2800', bc:'#A8D848', section:'profesional' },
+
+  // ── GYM ──
+  { id:'h08', emoji:'🏋️', name:'Gym',
+    days:[1,2,3,4,5,6], dot:'#FF9F0A',
+    badge:'Gym', bb:'#2A1A00', bc:'#FF9F0A', section:'gym' },
+
+  { id:'h09', emoji:'🧘‍♀️', name:'Estiramientos post-gym',
+    days:[1,2,3,4,5,6], dot:'#5AC8FA',
+    badge:'Gym', bb:'#002030', bc:'#5AC8FA', section:'gym' },
+
+  // ── IGLESIA ──
+  { id:'h10', emoji:'🙏', name:'Iglesia',
+    days:[0,4], dot:'#FF6B6B',           // Domingo y Jueves
+    badge:'2× sem', bb:'#2A0D0D', bc:'#FF6B6B', section:'iglesia' },
+
+  // ── BIENESTAR ──
+  { id:'h11', emoji:'🚶‍♀️', name:'Caminata',
+    days:[0], dot:'#34C759',              // Domingo — 1× semana
+    badge:'Semanal', bb:'#0D2818', bc:'#34C759', section:'bienestar' },
+
+  { id:'h12', emoji:'💃', name:'Bailar',
+    days:[3,6], dot:'#FF2D55',            // Miércoles y Sábado
+    badge:'2× sem', bb:'#2A0010', bc:'#FF2D55', section:'bienestar' },
+];
+
+// ── STATE ────────────────────────────────────────────────────────────────
+const KEY = 'mhb_v3';
+let completed = {};
+
+function load() {
+  try { const d = JSON.parse(localStorage.getItem(KEY)||'{}'); completed = d.completed||{}; }
+  catch(e) { completed = {}; }
+}
+function save() { localStorage.setItem(KEY, JSON.stringify({ completed })); }
+
+// ── DATE UTILS ───────────────────────────────────────────────────────────
+function ds(d) { return `${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}`; }
+function p2(n) { return String(n).padStart(2,'0'); }
+function todayDs() { return ds(new Date()); }
+function todayDow() { return new Date().getDay(); }
+
+function weekSunday() {
+  const t = new Date(); t.setHours(0,0,0,0);
+  t.setDate(t.getDate() - t.getDay()); return t;
+}
+
+function fmtDate() {
+  const t = new Date();
+  const days  = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
+  const months= ['enero','febrero','marzo','abril','mayo','junio',
+                 'julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  return `${days[t.getDay()]}, ${t.getDate()} de ${months[t.getMonth()]}`;
+}
+
+// ── STATS ────────────────────────────────────────────────────────────────
+function calcStats() {
+  const today = todayDow();
+  const tds   = todayDs();
+  const dueToday = HABITS.filter(h => h.days.includes(today));
+  const doneToday= dueToday.filter(h => completed[`${h.id}-${tds}`]).length;
+
+  // Week completion
+  const sun = weekSunday();
+  let weekDue=0, weekDone=0;
+  for (let i=0;i<7;i++) {
+    const d = new Date(sun); d.setDate(sun.getDate()+i);
+    const dow = d.getDay();
+    const dstr = ds(d);
+    const isPast = d <= new Date();
+    if (!isPast) continue;
+    HABITS.forEach(h => {
+      if (h.days.includes(dow)) {
+        weekDue++;
+        if (completed[`${h.id}-${dstr}`]) weekDone++;
+      }
+    });
+  }
+  const weekPct = weekDue>0 ? Math.round(weekDone/weekDue*100) : 0;
+
+  // Best streak (across all habits)
+  let bestStreak = 0;
+  HABITS.forEach(h => {
+    const s = getStreak(h.id);
+    if (s > bestStreak) bestStreak = s;
+  });
+
+  return { doneToday, totalToday: dueToday.length, weekPct, bestStreak };
+}
+
+function getStreak(habitId) {
+  const h = HABITS.find(x=>x.id===habitId);
+  if (!h) return 0;
+  let streak=0;
+  const t = new Date(); t.setHours(0,0,0,0);
+  const tstr = ds(t);
+  if (!completed[`${habitId}-${tstr}`]) t.setDate(t.getDate()-1);
+  for (let i=0;i<365;i++) {
+    if (!h.days.includes(t.getDay())) { t.setDate(t.getDate()-1); continue; }
+    if (completed[`${habitId}-${ds(t)}`]) { streak++; t.setDate(t.getDate()-1); }
+    else break;
+  }
+  return streak;
+}
+
+// ── TOGGLE ───────────────────────────────────────────────────────────────
+function toggle(habitId) {
+  const h = HABITS.find(x=>x.id===habitId);
+  if (!h || !h.days.includes(todayDow())) return;
+  const key = `${habitId}-${todayDs()}`;
+  if (completed[key]) delete completed[key]; else completed[key] = true;
+  save(); render();
+}
+
+// ── RENDER ───────────────────────────────────────────────────────────────
+function render() {
+  // Header date
+  document.getElementById('hdrDate').textContent = fmtDate();
+
+  // Stats
+  const { doneToday, totalToday, weekPct, bestStreak } = calcStats();
+  document.getElementById('sToday').textContent  = `${doneToday}/${totalToday}`;
+  document.getElementById('sStreak').textContent = bestStreak;
+  document.getElementById('sWeek').textContent   = `${weekPct}%`;
+
+  // Habits
+  const root = document.getElementById('habitsRoot');
+  let html = '';
+
+  SECTIONS.forEach(sec => {
+    const secHabits = HABITS.filter(h=>h.section===sec.id);
+    if (!secHabits.length) return;
+
+    html += `<div class="section">
+      <div class="sec-title">${sec.title}</div>
+      ${sec.sub ? `<div class="sec-sub">${sec.sub}</div>` : ''}`;
+
+    secHabits.forEach(h => { html += habitCard(h); });
+    html += `</div>`;
+  });
+
+  root.innerHTML = html;
+}
+
+function habitCard(h) {
+  const today    = todayDow();
+  const tds      = todayDs();
+  const dueToday = h.days.includes(today);
+  const doneTd   = !!completed[`${h.id}-${tds}`];
+  const sun      = weekSunday();
+
+  // Day pills
+  const pills = DAYS_LABEL.map((lbl,i) => {
+    const dow = i;
+    const inSched = h.days.includes(dow);
+    const isToday = dow === today;
+
+    // Was this day's date done this week?
+    const dayDate = new Date(sun); dayDate.setDate(sun.getDate()+i);
+    const dayStr  = ds(dayDate);
+    const wasDone = !!completed[`${h.id}-${dayStr}`];
+
+    let cls = 'dp';
+    if (wasDone && inSched)        cls += ' wasdone';
+    else if (isToday && inSched)   cls += ' active istoday';
+    else if (inSched)              cls += ' active';
+
+    return `<div class="${cls}">${lbl}</div>`;
+  }).join('');
+
+  const circleCls = doneTd  ? 'circle on'
+                 : !dueToday ? 'circle notdue'
+                 : 'circle off';
+
+  return `
+    <div class="habit${doneTd?' completed':''}" onclick="toggle('${h.id}')">
+      <div class="hdot" style="background:${h.dot}"></div>
+      <div class="hmid">
+        <div class="hname-row">
+          <span class="hemoji">${h.emoji}</span>
+          <span class="hname">${h.name}</span>
+        </div>
+        <div class="pills">${pills}</div>
+      </div>
+      <div class="hright">
+        <div class="badge" style="background:${h.bb};color:${h.bc}">${h.badge}</div>
+        <div class="${circleCls}">${doneTd?'✓':''}</div>
+      </div>
+    </div>`;
+}
+
+// ── THEME ────────────────────────────────────────────────────────────────
+function toggleTheme() {
+  const html = document.documentElement;
+  const isDark = html.getAttribute('data-theme') === 'dark';
+  html.setAttribute('data-theme', isDark ? 'light' : 'dark');
+  document.getElementById('themeBtn').textContent = isDark ? '☀️' : '🌙';
+}
+
+// ── BOOT ─────────────────────────────────────────────────────────────────
+load();
+render();
+</script>
+</body>
+</html>
